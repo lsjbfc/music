@@ -1,0 +1,32 @@
+html,
+body,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+image,
+ul,
+li,
+ol {
+    margin: 0;
+    padding: 0;
+}
+
+div {
+    /* word-break: keep-all;
+    word-wrap: break-word; */
+    white-space: pre;
+    word-wrap:break-word;
+    word-break:break-all;
+    width: 1200px;
+    margin: auto;
+}
+
+body {
+    width: 100%;
+    min-height: 100%;
+}
+
+/*# sourceMappingURL=app.758dba45.css.map*/
