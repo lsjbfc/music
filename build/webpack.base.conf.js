@@ -31,9 +31,14 @@ module.exports = {
 
     //配置别名映射
     alias: {
-      src: resolve("src"),
+      src: resolve("src")
       // CONFIG: path.resolve(__dirname, "../static/base.json")
-    }
+    },
+    modules: [
+      // 优化模块查找路径
+      path.resolve(__dirname, "src"),
+      path.resolve(__dirname, "node_modules") // 指定node_modules所在位置 当你import 第三方模块时 直接从这个路径下搜索寻找
+    ]
   },
   //处理模块的规则(可在此处使用不同的loader来处理模块！)
   module: {

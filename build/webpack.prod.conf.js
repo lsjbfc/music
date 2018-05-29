@@ -17,7 +17,7 @@ const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const assetsPath = dir => path.posix.join(prodConf.assetsPath, dir);
 
 const prod = merge({}, baseConf, {
-  mode: "development",
+  mode: "production",
   output: {
     //文件名
     filename: assetsPath("js/[name].[chunkhash:5].min.js"),
@@ -87,11 +87,11 @@ const prod = merge({}, baseConf, {
         to: prodConf.assetsPath,
         ignore: [".*"]
       }
-    ]),
-    new webpack.DllReferencePlugin({
-      context: __dirname,
-      manifest: require(path.join(__dirname, "..", "/dll", "manifest.json"))
-    }),
+    ])
+    // new webpack.DllReferencePlugin({
+    //   context: __dirname,
+    //   manifest: require(path.join(__dirname, "..", "/dll", "manifest.json"))
+    // }),
     // html配置
     // new HtmlWebpackPlugin({
     //     filename: 'index.html',
