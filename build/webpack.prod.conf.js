@@ -47,15 +47,6 @@ const prod = merge({}, baseConf, {
   },
   devtool: "#source-map",
   plugins: [
-    // new webpack.DllReferencePlugin({
-    //     context: '.',
-    //     manifest: require('/bundle-manifest.json')
-    // }),
-    // new webpack.DllPlugin({
-    //     context: __dirname,
-    //     name: "[name]_[hash]",
-    //     path: path.join(__dirname, "manifest.json"),
-    // }),
     //压缩js
     new UglifyJsPlugin({
       uglifyOptions: {
@@ -87,26 +78,22 @@ const prod = merge({}, baseConf, {
         to: prodConf.assetsPath,
         ignore: [".*"]
       }
-    ]),
-    new webpack.DllReferencePlugin({
-      context: __dirname,
-      manifest: require(path.join(__dirname, "..", "/dll", "manifest.json"))
-    }),
+    ])
     // html配置
     // new HtmlWebpackPlugin({
     //     filename: 'index.html',
     //     template: path.resolve(__dirname, '../code/client/index.html'),
-    //     // favicon: path.resolve(__dirname, '../static/favicon.ico'),
+    //     favicon: path.resolve(__dirname, '../static/favicon.ico'),
     //     inject: true,
-    //     //压缩配置
-    //     // minify: {
-    //     //     //删除Html注释
-    //     //     // removeComments: true,
-    //     //     //去除空格
-    //     //     collapseWhitespace: true,
-    //     //     //去除属性引号
-    //     //     removeAttributeQuotes: true
-    //     // },
+    //     // 压缩配置
+    //     minify: {
+    //         //删除Html注释
+    //         // removeComments: true,
+    //         //去除空格
+    //         collapseWhitespace: true,
+    //         //去除属性引号
+    //         removeAttributeQuotes: true
+    //     },
     // })
   ]
 });
@@ -118,5 +105,4 @@ if (process.env.analyz_config_report) {
   prod.plugins.push(new BundleAnalyzerPlugin());
 }
 
-// console.log("prod", prod)
 module.exports = prod;
