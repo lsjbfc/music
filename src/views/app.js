@@ -5,7 +5,7 @@ class App extends Component {
     return (
       <div>
         {this.props.children}
-        <Head />
+        <Head title="永夜君王"/>
       </div>
     );
   }
