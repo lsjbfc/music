@@ -8,26 +8,25 @@ const parseHtml = require("./paresHtml.js");
 let userAgents = require("./userAgent.js");
 let chapterUrls = [];
 let bookname = "";
-let BaseURL = "http://www.biquge.com.tw/";
+let BaseURL = "www.baidu.com";
 let count = 3;
 let sum = 1;
 let timeout = 20;
-const getHtml = async function(pageUrl) {
-  console.log("获取", pageUrl, "中");
+const getHtml = function(pageUrl) {
   let htmlDataLength = 0;
   let htmlData = [];
-  //   setTimeout(function(){})
+  let reqPptions = {
+    hostname: "www.biquge.com.tw",
+    port: 80,
+    path: pageUrl,
+    method: "get",
+    headers: {
+      "User-Agent": userAgents[parseInt(Math.random() * userAgents.length)]
+    }
+  };
+  console.log("获取", reqPptions.hostname + reqPptions.path, "中");
   return new Promise((resolve, reject) => {
     try {
-      let reqPptions = {
-        hostname: "www.biquge.com.tw",
-        port: 80,
-        path: pageUrl,
-        method: "get"
-        // headers: {
-        //   "User-Agent": userAgents[parseInt(Math.random() * userAgents.length)]
-        // }
-      };
       let userAgent = userAgents[parseInt(Math.random() * userAgents.length)];
       let req = http.request(reqPptions, res => {
         res.on("data", function(chunk) {
@@ -36,13 +35,14 @@ const getHtml = async function(pageUrl) {
           htmlDataLength += chunk.length;
         });
         res.on("end", function() {
-          console.log("获取", pageUrl, "结束");
+          console.log("获取", reqPptions.hostname + reqPptions.path, "结束");
           resolve({ htmlData: htmlData, htmlDataLength: htmlDataLength });
         });
       });
       req.setTimeout(timeout * 1000, () => {
         req.abort();
         console.log("发现你啦！");
+        getGroupchapter(getChapter(chapterUrls));
       });
       req.on("error", function(e) {
         console.log("problem with request: " + e.message);
@@ -93,7 +93,7 @@ getHtml(bookUrl)
           let chapterUrl = $(item)
             .find("a")
             .attr("href");
-          chapterUrls.push(BaseURL + chapterUrl);
+          chapterUrls.push(chapterUrl);
         });
       //   chapterUrls = chapterUrls.reverse();
     } else {
@@ -127,12 +127,7 @@ function getGroupchapter(chapters) {
       });
       Promise.all(appendFileSyncAry).then(res => {
         let time = getTime();
-        console.log(
-          "本部分写入完成",
-          "   ",
-          "tiem",
-          count * 10 * time * 400 + "ms"
-        );
+        console.log("本部分写入完成", "   ", "tiem", time * 400 + "ms");
         if (chapterUrls.length > 0) {
           setTimeout(() => {
             getGroupchapter(getChapter(chapterUrls));
@@ -233,9 +228,13 @@ function appendFile(fileNmae, content) {
     }
   });
 }
-process.on("uncaughtException", function(err) {
-  //打印出错误
-  console.log(err);
-  //打印出错误的调用栈方便调试
-  console.log(err.stack);
-});
+async function modifyJson(pathName) {
+  await fs.existsSync(
+    path.resolve(__dirname, function(e) {
+      if (e) {
+      }
+    })
+  );
+}
+
+
