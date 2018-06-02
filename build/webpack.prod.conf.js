@@ -17,7 +17,7 @@ const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const assetsPath = dir => path.posix.join(prodConf.assetsPath, dir);
 
 const prod = merge({}, baseConf, {
-  mode: "development",
+  mode: "production",
   output: {
     //文件名
     filename: assetsPath("js/[name].[chunkhash:5].min.js"),

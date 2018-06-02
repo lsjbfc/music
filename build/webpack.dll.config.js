@@ -8,13 +8,13 @@ function resolve(dir) {
 module.exports = {
   mode: "none",
   entry: {
-    vendors: [path.resolve(__dirname, "../src/lib/vendor.js")]
+    vendors: [path.resolve(__dirname, "../src/vendors.js")]
   },
 
   resolve: {
     alias: {
-      CONFIG: path.resolve(__dirname, "../static/base.json"),
-      A: path.resolve(__dirname, "../src/lib/A.js")
+      // CONFIG: path.resolve(__dirname, "../static/base.json"),
+      // A: path.resolve(__dirname, "../src/lib/A.js")
     }
   },
   output: {
