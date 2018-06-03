@@ -31,7 +31,7 @@ module.exports = {
 
     //配置别名映射
     alias: {
-      src: resolve("src"),
+      src: resolve("src")
       // CONFIG: path.resolve(__dirname, "../static/base.json")
     }
   },
@@ -39,7 +39,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/, //资源路径
+        test: /\.js|jsx$/, //资源路径
         loader: "babel-loader", //该路径执行的loader
         include: resolve("src"), //指定哪个文件loader
         exclude: path.resolve(__dirname, "../static/")

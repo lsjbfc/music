@@ -8,207 +8,115 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const vendorDllManifest = require("../dll/vendors.manifest.json");
 const vendorDllConfig = require("../dll/vendor.config.json");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const styleLoader = require("./style-loader");
+const merge = require("webpack-merge");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+const baseConf = require("./webpack.base.conf"); //webpack基本配置
+const prodConf = require("../config").build; //生产环境配置参数
+
 console.log("vendorDllConfig", vendorDllConfig.vendors.js);
-module.exports = {
-  mode: "production",
-  devtool: "source-map",
-  entry: {
-    app: [path.resolve(__dirname, "../src/js/index.js")]
-  },
 
+
+const assetsPath = dir => path.posix.join(prodConf.assetsPath, dir);
+
+const Dllprod = merge({}, baseConf, {
+  mode: "development",
+  devtool: "#source-map",
   output: {
-    path: path.resolve(__dirname, "../dist"),
-    filename: "assets/js/[name].[chunkhash:8].js",
-    chunkFilename: "assets/js/[name].[chunkhash:8].chunk.js"
-  },
+    //文件名
+    filename: assetsPath("js/[name]_[chunkhash:5].js"),
 
+    //用于打包require.ensure(代码分割)方法中引入的模块
+    chunkFilename: assetsPath("js/[name]_[chunkhash:5].js")
+  },
   module: {
-    rules: [
-      {
-        test: /\.jsx?$/,
-        exclude: /node_modules/,
-        include: path.resolve(__dirname, "src"),
-        use: ["babel-loader?cacheDirectory"]
-      },
-      {
-        test: /\.css$/,
-        exclude: /node_modules/,
-        include: path.resolve(__dirname, "src"),
-        use: [
-          //'style-loader',
-          MiniCssExtractPlugin.loader,
-          "css-loader",
-          {
-            loader: "postcss-loader",
-            options: { sourceMap: true, config: { path: "postcss.config.js" } }
-          }
-        ]
-      },
-      {
-        test: /\.css$/,
-        exclude: /node_modules/,
-        include: path.resolve(__dirname, "../src"),
-        use: [
-          //'style-loader',
-          MiniCssExtractPlugin.loader,
-          "css-loader",
-        //   {
-        //     loader: "postcss-loader",
-        //     options: { sourceMap: true, config: { path: "postcss.config.js" } }
-        //   }
-        ]
-      },
-      {
-        test: /\.scss$/,
-        exclude: /node_modules/,
-        include: path.resolve(__dirname, "../src"),
-        use: [
-          //'style-loader',
-          MiniCssExtractPlugin.loader,
-          "css-loader",
-          {
-            loader: "postcss-loader",
-            options: { sourceMap: true, config: { path: "postcss.config.js" } }
-          },
-          "sass-loader"
-        ]
-      },
-      {
-        test: /\.(png|svg|jpe?g|gif)$/,
-        exclude: /node_modules/,
-        include: path.resolve(__dirname, "src"),
-        use: [
-          {
-            loader: "url-loader",
-            options: {
-              limit: 8192,
-              name: "assets/img/[name].[hash:8].[ext]"
-            }
-          }
-        ]
-      },
-      {
-        test: /\.(woff2?|eot|ttf|otf)$/,
-        exclude: /node_modules/,
-        include: path.resolve(__dirname, "src"),
-        use: [
-          {
-            loader: "url-loader",
-            options: {
-              limit: 10000,
-              name: "assets/font/[name].[hash:8].[ext]"
-            }
-          }
-        ]
-      }
-    ]
+    rules: styleLoader.styleLoaders({
+      extract: true,
+      sourceMap: true
+    })
   },
-
-  resolve: {
-    modules: [
-      // 优化模块查找路径
-      path.resolve(__dirname, "src"),
-      path.resolve(__dirname, "node_modules") // 指定node_modules所在位置 当你import 第三方模块时 直接从这个路径下搜索寻找
-    ],
-    alias: {
-      assets: path.resolve(__dirname, "src/assets/"),
-      components: path.resolve(__dirname, "src/components/"),
-      style: path.resolve(__dirname, "src/style/")
+  optimization: {
+    runtimeChunk: {
+      name: "manifest"
     },
-    extensions: [".js", ".jsx"],
-    // 考虑到 Scope Hoisting 依赖源码需采用 ES6 模块化语法，还需要配置 mainFields。因为大部分 Npm 中的第三方库采用了 CommonJS 语法，但部分库会同时提供 ES6 模块化的代码，为了充分发挥 Scope Hoisting 的作用，需要增加以下配置
-    // 针对 Npm 中的第三方模块优先采用 jsnext:main 中指向的 ES6 模块化语法的文件
-    mainFields: ["jsnext:main", "browser", "main"]
+    splitChunks: {
+      cacheGroups: {
+        commons: {
+          test: /[\\/]node_modules[\\/]/,
+          name: "vendor",
+          chunks: "all"
+        }
+      }
+    }
   },
-
   plugins: [
-    // new ExtractTextPlugin({
-    //   filename: assetsPath("css/[name].css")
-    // }),
-    new HtmlWebpackPlugin({
-      title: "App",
-      chunks: ["runtime", "common", "app"],
-      template: path.resolve(__dirname, "../src/pages/index.html"),
-      filename: "index.html"
-      //bundleName: vendorDllConfig.vendor.js
-    }),
-    new HtmlIncludeAssetsPlugin({
-      assets: [vendorDllConfig.vendors.js], // 添加的资源相对html的路径
-      append: false // false 在其他资源的之前添加 true 在其他资源之后添加
-    }),
-    new webpack.HashedModuleIdsPlugin(),
-    // 在webpack4中当mode为production时默认开启了Scope Hoisting 可以让webpack打包出来的代码文件更小、运行更快。
-    // new webpack.optimize.ModuleConcatenationPlugin(), // webpack3 配置，webpack4 在mode为production时无需配置
     // 当我们需要使用动态链接库时 首先会找到manifest文件 得到name值记录的全局变量名称 然后找到动态链接库文件 进行加载
     new webpack.DllReferencePlugin({
       context: process.cwd(),
       manifest: vendorDllManifest
     }),
-    new MiniCssExtractPlugin({
-      //提取为外部css代码
-      filename: "assets/css/[name].[contenthash:8].css"
+    //压缩js
+    new UglifyJsPlugin({
+      uglifyOptions: {
+        compress: {
+          warnings: false,
+          // drop_console: true, // 打包后去除console.log
+          collapse_vars: true, // 内嵌定义了但是只用到一次的变量
+          reduce_vars: true // 提取出出现多次但是没有定义成变量去引用的静态值
+          // pure_funcs: ['console.log']
+        }
+      },
+      sourceMap: true,
+      parallel: true // 使用多进程并行运行来提高构建速度
     }),
+
+    //作用域提升,提升代码在浏览器执行速度
+    new webpack.optimize.ModuleConcatenationPlugin(),
+
+    //根据模块相对路径生成四位数hash值作为模块id
+    new webpack.HashedModuleIdsPlugin(),
+
+    //将整个文件复制到构建输出指定目录下
     new CopyWebpackPlugin([
-        {
-          from: path.resolve(__dirname, "../dll/assets/js"),
-          to: path.resolve(__dirname, "../dist/assets/js"),
-          ignore: [".*"]
-        }
-      ]),
-    // new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /zh|en/), 语言支持过滤
-    /* new ParallelUglifyPlugin({
-            exclude: path.resolve(__dirname, 'node_modules'),
-            include: path.resolve(__dirname, 'src'),
-            workerCount: os.cpus().length,
-            sourceMap: true,
-            uglifyJS: {
-                output: {
-                    beautify: false, // 不需要格式化
-                    comments: false // 保留注释
-                },
-                compress: { // 压缩
-                    warnings: false, // 删除无用代码时不输出警告
-                    drop_console: true, // 删除console语句
-                    collapse_vars: true, // 内嵌定义了但是只有用到一次的变量
-                    reduce_vars: true // 提取出出现多次但是没有定义成变量去引用的静态值
-                }
-            }
-        }), */
-    /* new webpack.ProvidePlugin({ // 全局加载jquery
-            $: "jquery",
-            jQuery: "jquery"
-        }), */
-  ],
-
-  optimization: {
-    // runtimeChunk: {  // 小于10k内联处理，减少请求次数
-    //     name: "runtime"
-    // },
-    splitChunks: {
-      cacheGroups: {
-        common: {
-          // 抽离自己写的公共代码，common这个名字可以随意起
-          name: "common", // 任意命名
-          minChunks: 2
-        },
-        styles: {
-          name: "common",
-          test: /\.css$/,
-          chunks: "all",
-          enforce: true,
-          minChunks: 2
-        }
+      {
+        from: path.resolve(__dirname, "../static"),
+        to: prodConf.assetsPath,
+        ignore: [".*"]
+      },
+      {
+        from: path.resolve(__dirname, "../dll/static/js"),
+        to: path.resolve(__dirname, "../dist/static/js"),
+        ignore: [".*"]
       }
-    }
-  },
+    ]),
+    // html配置
+    new HtmlWebpackPlugin({
+      filename: "index.html",
+      template: path.resolve(__dirname, "../src/index.html"),
+      // favicon: path.resolve(__dirname, '../static/favicon.ico'),
+      inject: true,
+      // 压缩配置
+      minify: {
+        //删除Html注释
+        removeComments: true,
+        //去除空格
+        collapseWhitespace: true,
+        //去除属性引号
+        removeAttributeQuotes: true
+      }
+    }),
+    new HtmlIncludeAssetsPlugin({
+      assets: [vendorDllConfig.vendors.js], // 添加的资源相对html的路径
+      append: false // false 在其他资源的之前添加 true 在其他资源之后添加
+    })
+  ]
+});
 
-  performance: {
-    hints: "error",
-    maxEntrypointSize: 400000, // 入口文件的最大体积 400000bytes = 390kb, 默认是250000bytes (包括 app.js+common.js+runtime.js)
-    maxAssetSize: 300000 // 资源文件大小 300000bytes = 244kb, 默认是250000bytes
-    // assetFilter: function (assetFilename) {
-    //     // 只给出.js 文件的性能提示
-    //     return assetFilename.endsWith('.js');
-    // }
-  }
-};
+// 查看打包内容
+if (process.env.analyz_config_report) {
+  const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
+    .BundleAnalyzerPlugin;
+  prod.plugins.push(new BundleAnalyzerPlugin());
+}
+
+module.exports = Dllprod;
