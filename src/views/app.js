@@ -89,7 +89,6 @@ class App extends Component {
               </Menu>
             </Sider>
             <Content style={{ padding: "0 24px", minHeight: 280 }}>
-              Content
               {this.props.children}
             </Content>
           </Layout>

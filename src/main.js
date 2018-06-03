@@ -12,15 +12,16 @@ import About from "./views/about.js";
 import Home from "./views/home.js";
 import Hot from "./views/Hot.js";
 import Other from "./views/other.jsx";
+import { Admin } from "./views/admin.jsx";
 const routes = (
   <AppContainer>
     <HashRouter>
       <Switch>
         <div className="main">
           <Route exact={true} path="/" component={App} />
-          <Route path="/About" render={() => About} />
-          <Route path="/Home" render={() => Home} />
-          <Route path="/hot" render={() => Hot} />
+          <Route exact={true} path="/login" component={App} />
+          <Redirect to="/login" />
+          <Route path="/admin" render={() => Admin} />
         </div>
       </Switch>
     </HashRouter>
