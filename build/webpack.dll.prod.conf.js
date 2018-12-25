@@ -1,122 +1,156 @@
+"use strict";
+process.env.NODE_ENV = "production";
 const path = require("path");
-const os = require("os");
+const utils = require("./utils");
 const webpack = require("webpack");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const HtmlIncludeAssetsPlugin = require("html-webpack-include-assets-plugin");
-const ParallelUglifyPlugin = require("webpack-parallel-uglify-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const vendorDllManifest = require("../dll/vendors.manifest.json");
-const vendorDllConfig = require("../dll/vendor.config.json");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const styleLoader = require("./style-loader");
+const config = require("../config");
 const merge = require("webpack-merge");
+const baseWebpackConfig = require("./webpack.base.conf");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
-const baseConf = require("./webpack.base.conf"); //webpack基本配置
-const prodConf = require("../config").build; //生产环境配置参数
+// const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlIncludeAssetsPlugin = require("html-webpack-include-assets-plugin");
+const vendorDllConfig = require("../dll/vendor.config.json");
+const vendorDllManifest = require("../dll/vendors.manifest.json");
+// const HappyPackPlugin = require("./happypack.config");
+const env = require("../config/prod.env");
 
-console.log("vendorDllConfig", vendorDllConfig.vendors.js);
-
-
-const assetsPath = dir => path.posix.join(prodConf.assetsPath, dir);
-
-const Dllprod = merge({}, baseConf, {
-  mode: "development",
-  devtool: "#source-map",
-  output: {
-    //文件名
-    filename: assetsPath("js/[name]_[chunkhash:5].js"),
-
-    //用于打包require.ensure(代码分割)方法中引入的模块
-    chunkFilename: assetsPath("js/[name]_[chunkhash:5].js")
-  },
+const webpackConfig = merge(baseWebpackConfig, {
   module: {
-    rules: styleLoader.styleLoaders({
+    rules: utils.styleLoaders({
+      sourceMap: config.build.productionSourceMap,
       extract: true,
-      sourceMap: true
+      usePostCSS: true
     })
   },
+  mode: "production",
+  // devtool: config.build.productionSourceMap ? config.build.devtool : false,
+  output: {
+    path: config.build.assetsRoot,
+    filename: utils.assetsPath("js/[name].[chunkhash:7].js"),
+    chunkFilename: utils.assetsPath("js/[id].[chunkhash:7].js")
+  },
   optimization: {
-    runtimeChunk: {
-      name: "manifest"
-    },
+    minimizer: [
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          compress: {
+            warnings: true,
+            drop_debugger: true,
+            drop_console: true
+          }
+        },
+        sourceMap: false,
+        parallel: true
+      })
+    ],
+    minimize: true, //是否进行代码压缩
     splitChunks: {
+      chunks: "async",
+      minSize: 30000, //模块大于30k会被抽离到公共模块
+      minChunks: 1, //模块出现1次就会被抽离到公共模块
+      maxAsyncRequests: 5, //异步模块，一次最多只能被加载5个
+      maxInitialRequests: 3, //入口模块最多只能加载3个
+      name: true,
       cacheGroups: {
-        commons: {
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true
+        },
+        vendors: {
           test: /[\\/]node_modules[\\/]/,
-          name: "vendor",
-          chunks: "all"
+          priority: -10
+        },
+        styles: {
+          name: "common",
+          test: /\.(less|css)$/,
+          chunks: "all",
+          minChunks: 1,
+          reuseExistingChunk: true,
+          enforce: true
         }
       }
+    },
+    runtimeChunk: {
+      name: "runtime"
     }
   },
   plugins: [
-    // 当我们需要使用动态链接库时 首先会找到manifest文件 得到name值记录的全局变量名称 然后找到动态链接库文件 进行加载
+    // http://vuejs.github.io/vue-loader/en/workflow/production.html
+    new webpack.DefinePlugin({
+      "process.env": env
+    }),
     new webpack.DllReferencePlugin({
       context: process.cwd(),
       manifest: vendorDllManifest
     }),
-    //压缩js
-    new UglifyJsPlugin({
-      uglifyOptions: {
-        compress: {
-          warnings: false,
-          // drop_console: true, // 打包后去除console.log
-          collapse_vars: true, // 内嵌定义了但是只用到一次的变量
-          reduce_vars: true // 提取出出现多次但是没有定义成变量去引用的静态值
-          // pure_funcs: ['console.log']
-        }
-      },
-      sourceMap: true,
-      parallel: true // 使用多进程并行运行来提高构建速度
+    new MiniCssExtractPlugin({
+      filename: utils.assetsPath("css/[name].[contenthash:7].css"),
+      chunkFilename: "css/[name].[contenthash:7].css", // use contenthash *
+      // allChunks: true
     }),
 
-    //作用域提升,提升代码在浏览器执行速度
-    new webpack.optimize.ModuleConcatenationPlugin(),
-
-    //根据模块相对路径生成四位数hash值作为模块id
-    new webpack.HashedModuleIdsPlugin(),
-
-    //将整个文件复制到构建输出指定目录下
-    new CopyWebpackPlugin([
-      {
-        from: path.resolve(__dirname, "../static"),
-        to: prodConf.assetsPath,
-        ignore: [".*"]
-      },
-      {
-        from: path.resolve(__dirname, "../dll/static/js"),
-        to: path.resolve(__dirname, "../dist/static/js"),
-        ignore: [".*"]
-      }
-    ]),
-    // html配置
     new HtmlWebpackPlugin({
-      filename: "index.html",
-      template: path.resolve(__dirname, "../src/index.html"),
-      // favicon: path.resolve(__dirname, '../static/favicon.ico'),
+      filename: config.build.index,
+      template: "index.html",
       inject: true,
-      // 压缩配置
       minify: {
-        //删除Html注释
         removeComments: true,
-        //去除空格
         collapseWhitespace: true,
-        //去除属性引号
         removeAttributeQuotes: true
-      }
+      },
+      chunksSortMode: "none",
+      favicon: path.resolve(__dirname, "../src/assets/favicon.ico")
     }),
     new HtmlIncludeAssetsPlugin({
       assets: [vendorDllConfig.vendors.js], // 添加的资源相对html的路径
       append: false // false 在其他资源的之前添加 true 在其他资源之后添加
-    })
+    }),
+    // keep module.id stable when vendor modules does not change
+    new webpack.HashedModuleIdsPlugin(),
+    // enable scope hoisting
+    new webpack.optimize.ModuleConcatenationPlugin(),
+
+    // copy custom static assets
+    new CopyWebpackPlugin([
+      {
+        from: path.resolve(__dirname, "../static"),
+        to: config.build.assetsSubDirectory,
+        ignore: [".*"]
+      },
+      {
+        from: path.resolve(__dirname, "../dll/static/js/"),
+        to: path.resolve(__dirname, "../dist/static/js"),
+        ignore: [".*"]
+      }
+    ])
   ]
 });
 
-// 查看打包内容
-if (process.env.analyz_config_report) {
-  const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
-    .BundleAnalyzerPlugin;
-  prod.plugins.push(new BundleAnalyzerPlugin());
+if (config.build.productionGzip) {
+  const CompressionWebpackPlugin = require("compression-webpack-plugin");
+
+  webpackConfig.plugins.push(
+    new CompressionWebpackPlugin({
+      asset: "[path].gz[query]",
+      algorithm: "gzip",
+      test: new RegExp(
+        "\\.(" + config.build.productionGzipExtensions.join("|") + ")$"
+      ),
+      threshold: 10240,
+      minRatio: 0.8
+    })
+  );
 }
 
-module.exports = Dllprod;
+if (config.build.bundleAnalyzerReport) {
+  const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
+    .BundleAnalyzerPlugin;
+  webpackConfig.plugins.push(new BundleAnalyzerPlugin());
+}
+
+module.exports = webpackConfig;

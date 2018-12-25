@@ -1,108 +1,130 @@
 "use strict";
+process.env.NODE_ENV = "production";
 const path = require("path");
+const utils = require("./utils");
 const webpack = require("webpack");
-const styleLoader = require("./style-loader");
-const prodConf = require("../config").build; //生产环境配置参数
-const baseConf = require("./webpack.base.conf"); //webpack基本配置
-const CleanWebpackPlugin = require("clean-webpack-plugin");
-//一个webpack配置合并模块,可简单的理解为与Object.assign()功能类似！
+const config = require("../config");
 const merge = require("webpack-merge");
-//一个创建html入口文件的webpack插件！
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-//一个拷贝文件的webpack插件！
+const baseWebpackConfig = require("./webpack.base.conf");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const OptimizeCSSPlugin = require("optimize-css-assets-webpack-plugin");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
-// 资源路径
-const assetsPath = dir => path.posix.join(prodConf.assetsPath, dir);
-
-const prod = merge({}, baseConf, {
-  mode: "development",
-  output: {
-    //文件名
-    filename: assetsPath("js/[name].[chunkhash:5].min.js"),
-
-    //用于打包require.ensure(代码分割)方法中引入的模块
-    chunkFilename: assetsPath("js/[name].[chunkhash:5].js")
-  },
+const env = require("../config/prod.env");
+const webpackConfig = merge(baseWebpackConfig, {
   module: {
-    rules: styleLoader.styleLoader({
+    rules: utils.styleLoaders({
+      sourceMap: config.build.productionSourceMap,
       extract: true,
-      sourceMap: true
+      usePostCSS: true
     })
   },
-  optimization: {
-    runtimeChunk: {
-      name: "manifest"
-    },
-    splitChunks: {
-      cacheGroups: {
-        commons: {
-          test: /[\\/]node_modules[\\/]/,
-          name: "vendor",
-          chunks: "all"
-        }
+  mode: "production",
+  devtool: config.build.productionSourceMap ? config.build.devtool : false,
+  output: {
+    path: config.build.assetsRoot,
+    filename: utils.assetsPath("js/[name].[chunkhash:7].js"),
+    chunkFilename: utils.assetsPath("js/[id].[chunkhash:7].js")
+  },
+  splitChunks: {
+    chunks: "initial", // 必须三选一： "initial" | "all"(默认就是all) | "async"    minSize: 0, // 最小尺寸，默认0   minChunks: 1, // 最小 chunk ，默认1   maxAsyncRequests: 1, // 最大异步请求数， 默认1   maxInitialRequests : 1, // 最大初始化请求书，默认1   name: function(){}, // 名称，此选项可接收 function   cacheGroups:{ // 这里开始设置缓存的 chunks     priority: 0, // 缓存组优先级     vendor: { // key 为entry中定义的 入口名称       chunks: "initial", // 必须三选一： "initial" | "all" | "async"(默认就是异步)        test: /react|lodash/, // 正则规则验证，如果符合就提取 chunk       name: "vendor", // 要缓存的 分隔出来的 chunk 名称        minSize: 0,       minChunks: 1,       enforce: true,       maxAsyncRequests: 1, // 最大异步请求数， 默认1       maxInitialRequests : 1, // 最大初始化请求书，默认1       reuseExistingChunk: true // 可设置是否重用该chunk（查看源码没有发现默认值）     }   } } },
+    minSize: 0, // 最小尺寸，默认0
+    minChunks: 1, // 最小 chunk ，默认1
+    maxAsyncRequests: 1, // 最大异步请求数， 默认1
+    maxInitialRequests: 1, // 最大初始化请求书，默认1
+    name: function() {}, // 名称，此选项可接收 function
+    cacheGroups: {
+      // 这里开始设置缓存的 chunks
+      priority: 0, // 缓存组优先级
+      vendor: {
+        // key 为entry中定义的 入口名称
+        chunks: "initial", // 必须三选一： "initial" | "all" | "async"(默认就是异步)
+        test: /react|lodash/, // 正则规则验证，如果符合就提取 chunk
+        name: "vendor", // 要缓存的 分隔出来的 chunk 名称
+        minSize: 0,
+        minChunks: 1,
+        enforce: true,
+        maxAsyncRequests: 1, // 最大异步请求数， 默认1
+        maxInitialRequests: 1, // 最大初始化请求书，默认1
+        reuseExistingChunk: true // 可设置是否重用该chunk（查看源码没有发现默认值）
       }
     }
   },
-  devtool: "#source-map",
+ 
   plugins: [
-    //压缩js
-    new UglifyJsPlugin({
-      uglifyOptions: {
-        compress: {
-          warnings: false,
-          // drop_console: true, // 打包后去除console.log
-          collapse_vars: true, // 内嵌定义了但是只用到一次的变量
-          reduce_vars: true // 提取出出现多次但是没有定义成变量去引用的静态值
-          // pure_funcs: ['console.log']
-        }
-      },
-      sourceMap: true,
-      parallel: true // 使用多进程并行运行来提高构建速度
+    // http://vuejs.github.io/vue-loader/en/workflow/production.html
+    new webpack.DefinePlugin({
+      "process.env": env
     }),
-    // new webpack.SourceMapDevToolPlugin({
-    //     filename: 'static/js/[name].[chunkhash:5].min.js.map',
-    //     // exclude: ['vendor.js']
-    // }),
-    //作用域提升,提升代码在浏览器执行速度
-    new webpack.optimize.ModuleConcatenationPlugin(),
-
-    //根据模块相对路径生成四位数hash值作为模块id
+    // MiniCssExtractPlugin
+    // extract css into its own file
+    new MiniCssExtractPlugin({
+      filename: utils.assetsPath("css/[name].[contenthash:7].css"),
+      allChunks: true
+    }),
+  
+    // duplicated CSS from different components can be deduped.
+    new OptimizeCSSPlugin({
+      cssProcessorOptions: config.build.productionSourceMap
+        ? { safe: true, map: { inline: false } }
+        : { safe: true }
+    }),
+    // generate dist index.html with correct asset hash for caching.
+    // you can customize output by editing /index.html
+    // see https://github.com/ampedandwired/html-webpack-plugin
+    new HtmlWebpackPlugin({
+      filename: config.build.index,
+      template: "index.html",
+      inject: true,
+      minify: {
+        removeComments: false,
+        collapseWhitespace: false,
+        removeAttributeQuotes: false
+        // more options:
+        // https://github.com/kangax/html-minifier#options-quick-reference
+      },
+      // necessary to consistently work with multiple chunks via CommonsChunkPlugin
+      chunksSortMode: "dependency",
+      favicon: path.resolve(__dirname, "../src/assets/favicon.ico")
+    }),
+    // keep module.id stable when vendor modules does not change
     new webpack.HashedModuleIdsPlugin(),
-
-    //将整个文件复制到构建输出指定目录下
+    // enable scope hoisting
+    new webpack.optimize.ModuleConcatenationPlugin(),
+  
+    // copy custom static assets
     new CopyWebpackPlugin([
       {
         from: path.resolve(__dirname, "../static"),
-        to: prodConf.assetsPath,
+        to: config.build.assetsSubDirectory,
         ignore: [".*"]
       }
     ])
-    // html配置
-    // new HtmlWebpackPlugin({
-    //     filename: 'index.html',
-    //     template: path.resolve(__dirname, '../code/client/index.html'),
-    //     favicon: path.resolve(__dirname, '../static/favicon.ico'),
-    //     inject: true,
-    //     // 压缩配置
-    //     minify: {
-    //         //删除Html注释
-    //         // removeComments: true,
-    //         //去除空格
-    //         collapseWhitespace: true,
-    //         //去除属性引号
-    //         removeAttributeQuotes: true
-    //     },
-    // })
   ]
 });
 
-// 查看打包内容
-if (process.env.analyz_config_report) {
-  const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
-    .BundleAnalyzerPlugin;
-  prod.plugins.push(new BundleAnalyzerPlugin());
+if (config.build.productionGzip) {
+  const CompressionWebpackPlugin = require("compression-webpack-plugin");
+
+  webpackConfig.plugins.push(
+    new CompressionWebpackPlugin({
+      asset: "[path].gz[query]",
+      algorithm: "gzip",
+      test: new RegExp(
+        "\\.(" + config.build.productionGzipExtensions.join("|") + ")$"
+      ),
+      threshold: 10240,
+      minRatio: 0.8
+    })
+  );
 }
 
-module.exports = prod;
+if (config.build.bundleAnalyzerReport) {
+  const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
+    .BundleAnalyzerPlugin;
+  webpackConfig.plugins.push(new BundleAnalyzerPlugin());
+}
+
+module.exports = webpackConfig;

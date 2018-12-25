@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="renderer" content="webkit" />
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta
+      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"
+      name="viewport"
+    />
+    <meta content="yes" name="apple-mobile-web-app-capable" />
+    <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+    <meta content="telephone=no" name="format-detection" />
+    <meta content="email=no" name="format-detection" />
+    <title>权益投资</title>
+    <% for (var chunk of webpack.chunks) { for (var file of chunk.files) { if
+    (file.match(/\.(js|css)$/)) { %>
+    <link
+      rel="<%= chunk.initial?'preload':'prefetch' %>"
+      href="<%= htmlWebpackPlugin.files.publicPath + file %>"
+      as="<%= file.match(/\.css$/)?'style':'script' %>"
+    />
+    <% }}} %>
+  </head>
+
+  <body>
+    <div id="app"></div>
+    <script>
+      window.onload = function() {
+        document.addEventListener(
+          "error",
+          function(e) {
+            let error = "";
+            if (e.target.localName == "link") {
+              error = e.target.href;
+            } else {
+              error = e.target.src;
+            }
+          },
+          true
+        );
+        window.onerror = function(msg, url, line, col, error) {
+          console.log("error", error.stack);
+        };
+      };
+    </script>
+    <!-- built files will be auto injected -->
+  </body>
+</html>

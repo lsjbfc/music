@@ -1,64 +1,109 @@
-const path = require('path')
-const glob = require('glob')
-const config = require('../config')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+"use strict";
+const path = require("path");
+const config = require("../config");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const packageConfig = require("../package.json");
+exports.assetsPath = function(_path) {
+  const assetsSubDirectory =
+    process.env.NODE_ENV === "production"
+      ? config.build.assetsSubDirectory
+      : config.dev.assetsSubDirectory;
 
-exports.template = function (options) {
-  options = options || {}
+  return path.posix.join(assetsSubDirectory, _path);
+};
 
-  function template(loader, loaderOptions) {
-    var loaders = [];
-    loaders.push({
-      loader: loader + '-loader',
-      options: Object.assign({}, loaderOptions, {})
-    })
-    return loaders;
+exports.cssLoaders = function(options) {
+  options = options || {};
+
+  const cssLoader = {
+    loader: "css-loader",
+    options: {
+      sourceMap: options.sourceMap
+    }
+  };
+
+  const postcssLoader = {
+    loader: "postcss-loader",
+    options: {
+      sourceMap: options.sourceMap
+    }
+  };
+
+  // generate loader string to be used with extract text plugin
+  function generateLoaders(loader, loaderOptions) {
+    const loaders = options.usePostCSS
+      ? [cssLoader, postcssLoader]
+      : [cssLoader];
+
+    if (loader) {
+      loaders.push({
+        loader: loader + "-loader",
+        options: Object.assign({}, loaderOptions, {
+          sourceMap: options.sourceMap
+        })
+      });
+    }
+
+    // Extract CSS when that option is specified
+    // (which is the case during production build)
+    // if (options.extract) {
+    //   // return ExtractTextPlugin.extract({
+    //   //   use: loaders,
+    //   //   fallback: "vue-style-loader"
+    //   // });
+    //   return [MiniCssExtractPlugin.loader].concat(loaders);
+    // } else {
+    //   return ["vue-style-loader"].concat(loaders);
+    // }
+    return [
+      options.extract ? MiniCssExtractPlugin.loader : "vue-style-loader"
+    ].concat(loaders);
   }
+  // https://vue-loader.vuejs.org/en/configurations/extract-css.html
   return {
-    art: template('art-template')
+    css: generateLoaders(),
+    postcss: generateLoaders(),
+    less: generateLoaders("less", {
+      globalVars: require(path.resolve(__dirname, "../src/utils/global.js")),
+      path: path.join(__dirname, "../src/")
+    }),
+    sass: generateLoaders("sass", { indentedSyntax: true }),
+    scss: generateLoaders("sass"),
+    stylus: generateLoaders("stylus"),
+    styl: generateLoaders("stylus")
+  };
+};
+
+// Generate loaders for standalone style files (outside of .vue)
+exports.styleLoaders = function(options) {
+  const output = [];
+  const loaders = exports.cssLoaders(options);
+
+  for (const extension in loaders) {
+    const loader = loaders[extension];
+    output.push({
+      test: new RegExp("\\." + extension + "$"),
+      use: loader
+    });
   }
-}
 
-// exports.getPages = function () {
-//   var pageDir = path.resolve(__dirname, '../src/pages/');
-//   var pageFiles = glob.sync(pageDir + '/*.html');
-//   return pageFiles.map(p => [path.relative(pageDir, p).split(path.sep).slice(0, -1).join('/'), p])
-// }
+  return output;
+};
 
-exports.getEntries = function () {
-  let jsDir = path.resolve(__dirname, '../src/js/');
-  let entryFiles = glob.sync(jsDir + '/**/*.*');
-  let map = {};
-  entryFiles.forEach(function (filePath) {
-    let filename = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.lastIndexOf('.'));
-    map[filename] = filePath;
-  });
-  return map;
-}
-exports.getHtmlPlugins = function () {
-  let pageDir = path.resolve(__dirname, '../src/pages/');
-  let pageFiles = glob.sync(pageDir + '/**/*.html');
-  let array = [];
-  pageFiles.forEach(function (filePath) {
-    let filename = filePath.substring(filePath.lastIndexOf('\/') + 1, filePath.lastIndexOf('.'));
-    array.push(new HtmlWebpackPlugin({
-      template: filePath,
-      filename: filename + '.html',
-      inject: "body",
-      chunks: ['manifest', 'vendor',filename],
-      chunksSortMode: function (chunk1, chunk2) {
-        var order = ['manifest', 'vendor', filename]
-        var order1 = order.indexOf(chunk1.names[0]);
-        var order2 = order.indexOf(chunk2.names[0]);
-        return order1 - order2;
-      },
-      minimize: 3,
-      minify: {
-        // removeComments: true, //移除HTML中的注释
-        collapseWhitespace: false //删除空白符与换行符
-      },
-      // favicon: path.resolve(__dirname, '../src/img/shenjuzijia.ico')
-    }));
-  });
-  return array;
-}
+exports.createNotifierCallback = () => {
+  const notifier = require("node-notifier");
+
+  return (severity, errors) => {
+    if (severity !== "error") return;
+
+    const error = errors[0];
+    const filename = error.file && error.file.split("!").pop();
+
+    notifier.notify({
+      title: packageConfig.name,
+      message: severity + ": " + error.name,
+      subtitle: filename || ""
+      // icon: path.join(__dirname, 'logo.png')
+    });
+  };
+};

@@ -1,141 +1,128 @@
 "use strict";
-const path = require("path");
+const utils = require("./utils");
 const webpack = require("webpack");
-const styleLoader = require("./style-loader");
-const devConf = require("../config").dev; //开发环境配置参数
-const baseConf = require("./webpack.base.conf"); //webpack基本配置
-
-//一个webpack配置合并模块,可简单的理解为与Object.assign()功能类似！
+const config = require("../config");
 const merge = require("webpack-merge");
-//一个创建html入口文件的webpack插件！
+const path = require("path");
+const baseWebpackConfig = require("./webpack.base.conf");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-//一个编译提示的webpack插件！
 const FriendlyErrorsPlugin = require("friendly-errors-webpack-plugin");
-//发送系统通知的一个node模块！
-const notifier = require("node-notifier");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const ExtractTextWebpackPlugin = require("extract-text-webpack-plugin");
-const dev = merge(baseConf, {
-  mode: "development",
+const portfinder = require("portfinder");
+
+const HOST = process.env.HOST;
+const PORT = process.env.PORT && Number(process.env.PORT);
+function getIPAdress() {
+  let interfaces = require("os").networkInterfaces();
+  for (let devName in interfaces) {
+    let iface = interfaces[devName];
+    for (let i = 0; i < iface.length; i++) {
+      let alias = iface[i];
+      if (
+        alias.family === "IPv4" &&
+        alias.address !== "127.0.0.1" &&
+        !alias.internal
+      ) {
+        return alias.address;
+      }
+    }
+  }
+}
+const devWebpackConfig = merge(baseWebpackConfig, {
   module: {
-    rules: styleLoader.styleLoaders({
-      extract: true,
-      sourceMap: true,
+    rules: utils.styleLoaders({
+      sourceMap: config.dev.cssSourceMap,
       usePostCSS: true
     })
   },
+  mode: "development",
+  // cheap-module-eval-source-map is faster for development
+  devtool: config.dev.devtool,
 
-  //生成sourceMaps(方便调试)
-  devtool: devConf.devtoolType,
+  // these devServer options should be customized in /config/index.js
   devServer: {
-    contentBase: path.join(__dirname, "dist"),
-    compress: true,
     clientLogLevel: "warning",
     historyApiFallback: {
       rewrites: [
         {
           from: /.*/,
-          to: path.posix.join(devConf.assetsPublicPath, "index.html")
+          to: path.posix.join(config.dev.assetsPublicPath, "index.html")
         }
       ]
     },
     hot: true,
     contentBase: false, // since we use CopyWebpackPlugin.
     compress: true,
-    host: "localhost",
-    port: 9001,
-    open: true,
-    overlay: true
+    host: HOST || config.dev.host,
+    port: PORT || config.dev.port,
+    open: config.dev.autoOpenBrowser, // config.dev.autoOpenBrowser
+    overlay: config.dev.errorOverlay
       ? {
           warnings: false,
           errors: true
         }
       : false,
-    publicPath: "/",
-    proxy: {},
+    publicPath: config.dev.assetsPublicPath,
+    proxy: config.dev.proxyTable,
     quiet: true, // necessary for FriendlyErrorsPlugin
     watchOptions: {
-      poll: false
+      poll: config.dev.poll
     }
   },
-  //   optimization: {
-  //     runtimeChunk: {
-  //       name: "manifest"
-  //     },
-  //     splitChunks: {
-  //       cacheGroups: {
-  //         commons: {
-  //           test: /[\\/]node_modules[\\/]/,
-  //           name: "vendor",
-  //           chunks: "all"
-  //         }
-  //       }
-  //     }
-  //   },
-  /*
-          optimization: {
-              splitChunks: {
-                chunks: "initial",         // 必须三选一： "initial" | "all"(默认就是all) | "async"
-                minSize: 0,                // 最小尺寸，默认0
-                minChunks: 1,              // 最小 chunk ，默认1
-                maxAsyncRequests: 1,       // 最大异步请求数， 默认1
-                maxInitialRequests: 1,    // 最大初始化请求书，默认1
-                name: () => {},              // 名称，此选项课接收 function
-                cacheGroups: {                 // 这里开始设置缓存的 chunks
-                  priority: "0",                // 缓存组优先级 false | object |
-                  vendor: {                   // key 为entry中定义的 入口名称
-                    chunks: "initial",        // 必须三选一： "initial" | "all" | "async"(默认就是异步)
-                    test: /react|lodash/,     // 正则规则验证，如果符合就提取 chunk
-                    name: "vendor",           // 要缓存的 分隔出来的 chunk 名称
-                    minSize: 0,
-                    minChunks: 1,
-                    enforce: true,
-                    maxAsyncRequests: 1,       // 最大异步请求数， 默认1
-                    maxInitialRequests: 1,    // 最大初始化请求书，默认1
-                    reuseExistingChunk: true   // 可设置是否重用该chunk（查看源码没有发现默认值）
-                  }
-                }
-              }
-            },
-           */
   plugins: [
-    //开启HMR(热替换功能,替换更新部分,不重载页面！)
+    new webpack.DefinePlugin({
+      "process.env": require("../config/dev.env")
+    }),
     new webpack.HotModuleReplacementPlugin(),
-    // new MiniCssExtractPlugin({
-    //   filename: "css/[name].[chunkhash:8].css",
-    //   chunkFilename: "[id].css"
-    // }),
-    //显示模块相对路径
-    new webpack.NamedModulesPlugin(),
-
-    //配置html入口信息
-    // new HtmlWebpackPlugin({
-    //     filename: 'index.html',
-    //     template: path.resolve(__dirname, '../code/client/index.html'),
-    //     inject: true
-    // }),
-
-    //编译提示插件
-    new FriendlyErrorsPlugin({
-      compilationSuccessInfo: {
-        messages: [`Your application is running here: http:`]
-      },
-      onErrors: function(severity, errors) {
-        if (severity !== "error") {
-          return;
-        }
-        const error = errors[0];
-        const filename = error.file.split("!").pop();
-        // console.log(filename)
-        //编译出错时,右下角弹出错误提示！
-        notifier.notify({
-          title: "blog",
-          message: severity + ": " + error.name,
-          subtitle: filename || ""
-        });
+    new webpack.NamedModulesPlugin(), // HMR shows correct file names in console on update.
+    new webpack.NoEmitOnErrorsPlugin(),
+    // https://github.com/ampedandwired/html-webpack-plugin
+    new HtmlWebpackPlugin({
+      filename: "index.html",
+      template: "index.html",
+      inject: true
+    }),
+    // copy custom static assets
+    new CopyWebpackPlugin([
+      {
+        from: path.resolve(__dirname, "../static"),
+        to: config.dev.assetsSubDirectory,
+        ignore: [".*"]
       }
-    })
+    ])
   ]
 });
-console.log(JSON.stringify(dev));
-module.exports = dev;
+
+module.exports = new Promise((resolve, reject) => {
+  portfinder.basePort = process.env.PORT || config.dev.port;
+  portfinder.getPort((err, port) => {
+    if (err) {
+      reject(err);
+    } else {
+      // publish the new Port, necessary for e2e tests
+      process.env.PORT = port;
+      // add port to devServer config
+      devWebpackConfig.devServer.port = port;
+
+      // Add FriendlyErrorsPlugin
+      devWebpackConfig.plugins.push(
+        new FriendlyErrorsPlugin({
+          compilationSuccessInfo: {
+            messages: [
+              `Your application is running here: http://${
+                devWebpackConfig.devServer.host
+              }:${port}`,
+              `Your application is running here: http://localhost:${port}`,
+              `Your application is running here: http:${getIPAdress()}:${port}`
+            ]
+          },
+          onErrors: config.dev.notifyOnErrors
+            ? utils.createNotifierCallback()
+            : undefined
+        })
+      );
+
+      resolve(devWebpackConfig);
+    }
+  });
+});

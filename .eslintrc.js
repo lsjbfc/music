@@ -5,21 +5,14 @@ module.exports = {
   },
   env: {
     browser: true,
-    es6: true
+    es6: true,
+    node: true
   },
-  extends: [
-    // https://github.com/vuejs/eslint-plugin-vue#priority-a-essential-error-prevention
-    // consider switching to `plugin:vue/strongly-recommended` or `plugin:vue/recommended` for stricter rules.
-    "plugin:vue/essential",
-    // https://github.com/standard/standard/blob/master/docs/RULES-en.md
-    "standard"
-  ],
-  // required to lint *.vue files
-  plugins: ["vue", "html"],
-  // add your custom rules here
+  extends: ["plugin:vue/essential", "standard"],
+  plugins: ["vue", "html", "prettier"],
   rules: {
     // allow async-await
-    "generator-star-spacing": "off",
+    "generator-star-spacing": "error",
     // allow debugger during development
     "no-debugger": process.env.NODE_ENV === "production" ? "error" : "off",
 
@@ -49,6 +42,7 @@ module.exports = {
         // "exceptions": ["Object"]
       }
     ],
+    "space-before-function-paren": 0, // anonymous: "never", named: "always"
     eqeqeq: 0, //三等号
     "no-var": 0, //用let或const替代var
     "no-const-assign": 2, //不允许const重新赋值
@@ -63,7 +57,7 @@ module.exports = {
     "no-invalid-regexp": 2, //无效的正则
     "no-func-assign": 2, //函数被赋值
     "valid-typeof": 1, //无效的类型判断
-    "no-unreachable": 2, //不可能执行到的代码
+    "no-unreachable": 1, //不可能执行到的代码
     "no-unexpected-multiline": 2, //行尾缺少分号可能导致一些意外情况
     "no-sparse-arrays": 1, //数组中多出逗号
     "no-shadow-restricted-names": 2, //关键词与命名冲突
@@ -146,6 +140,7 @@ module.exports = {
       }
     ],
     curly: 0 //if、else、while、for代码块用{}包围
+
     // //
     // //
     // // 可能的错误
@@ -262,20 +257,3 @@ module.exports = {
     // 'vue/jsx-uses-vars': 'error'
   }
 };
-// module.exports = {
-//     env: {
-//         browser: true,
-//         commonjs: true,
-//         es6: true
-//     },
-//     extends: 'eslint:recommended',
-//     parserOptions: {
-//         sourceType: 'module'
-//     },
-//     rules: {
-//         indent: ['error', 4],
-//         'linebreak-style': ['error', 'windows'],
-//         quotes: ['error', 'single'],
-//         semi: [0, 'never']
-//     }
-// };

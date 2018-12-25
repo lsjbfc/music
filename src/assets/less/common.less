@@ -1,0 +1,446 @@
+[aspectratio] {
+  position: relative;
+}
+[aspectratio]::before {
+  content: "";
+  display: block;
+  width: 1px;
+  margin-left: -1px;
+  height: 0;
+}
+.page {
+  width: 100%;
+  // height: 100%;
+  min-height: 100%;
+  background-color: #f0f0f0;
+  &::after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+    background-color: #f0f0f0;
+  }
+}
+@font-face {
+  font-family: Roboto;
+  src: url("../font/Roboto-Regular.ttf") format("truetype");
+}
+.Roboto,
+[Roboto] {
+  font-family: Roboto;
+}
+[v-cloak] {
+  display: none;
+}
+.noinfo {
+  width: 100vw;
+  height: 100vh;
+  background: url("../img/noinfo.png") no-repeat;
+  background-position: 0 60px;
+  background-size: contain;
+  text-align: center;
+  font-size: 30px;
+  font-weight: normal;
+  font-stretch: normal;
+  letter-spacing: 0px;
+  color: #999999;
+  span {
+    display: inline-block;
+    margin-top: 413px;
+  }
+}
+.mark {
+  color: #e92d2d !important;
+}
+.grey {
+  color: #333 !important;
+}
+.icon {
+  display: inline-block;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  transition: all 0.3s;
+}
+.checked {
+  width: 42px;
+  height: 30px;
+  background-image: url("../../assets/icon/checked.png");
+}
+.arrows {
+  display: inline-block;
+  width: 10px;
+  height: 18px;
+  background: url("../../assets/icon/Return_img.png") center no-repeat;
+  background-size: cover;
+}
+.heade-right {
+  width: 16px;
+  height: 30px;
+  background: url("../../assets/icon/head-right.png") center no-repeat;
+  background-size: cover;
+}
+.arrows-down {
+  display: inline-block;
+  width: 10px;
+  height: 18px;
+  background: url("../../assets/icon/Return_img.png") center no-repeat;
+  background-size: cover;
+  transform: rotate(90deg);
+}
+.arrows-up {
+  display: inline-block;
+  width: 10px;
+  height: 18px;
+  background: url("../../assets/icon/Return_img.png") center no-repeat;
+  background-size: cover;
+  transform: rotate(-90deg);
+}
+.see {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  background: url("../../assets/icon/See_img.png") top no-repeat;
+  background-size: cover;
+}
+.nosee {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  background: url("../../assets/icon/NOsee_img.png") top no-repeat;
+  background-size: cover;
+}
+.success {
+  display: block;
+  width: 80px;
+  height: 80px;
+  // background-image: url("../icon/Yes_img.png");
+  border-radius: 50%;
+  border: 5px solid #fff;
+  background: url("../icon/Yes_img.png") no-repeat center;
+  background-size: 60px;
+}
+.buy-success {
+  width: 145px;
+  height: 145px;
+  background: #3f85f4 url("../icon/Yes_img.png") no-repeat center;
+  background-size: 60px;
+  border-radius: 50%;
+}
+.buy-money {
+  width: 40px;
+  height: 40px;
+  background: url("../icon/shenqing.png") no-repeat center;
+  background-size: 40px;
+}
+.icon-money {
+  width: 40px;
+  height: 40px;
+  background: url("../icon/money.png") no-repeat center;
+  // background-size: 40px 31px;
+  background-size: cover;
+}
+.icon-details {
+  width: 31px;
+  height: 40px;
+  background: url("../icon/details.png") no-repeat center;
+  background-size: cover;
+}
+.icon-jiaoyijilu {
+  width: 38px;
+  height: 38px;
+  background: url("../icon/jiaoyijilu.png") no-repeat center;
+  background-size: cover;
+}
+.icon-back {
+  width: 18px;
+  height: 32px;
+  background: url("../icon/back@2x.png") no-repeat center;
+  background-size: cover;
+}
+.icon-clic {
+  position: relative;
+  &:after {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    position: absolute;
+    top: -10px;
+    right: -20px;
+    background-color: #ef1919;
+  }
+}
+.icon-search {
+  width: 38px;
+  height: 38px;
+  background: url("../icon/search.png") no-repeat center;
+  background-size: cover;
+}
+.icon-inv {
+  width: 50px;
+  height: 50px;
+  background: url("../icon/xianjinbao.png") no-repeat center;
+  background-size: cover;
+}
+.icon-tuijian,
+.icon-tuijain {
+  width: 40px;
+  height: 41px;
+  background: url("../icon/tuijian.png") no-repeat center;
+  background-size: cover;
+}
+.icon-tuandui {
+  width: 40px;
+  height: 40px;
+  background: url("../icon/team_img.png") no-repeat center;
+  background-size: cover;
+}
+.icon-fly {
+  width: 50px;
+  height: 50px;
+  background: url("../icon/fjp.png") no-repeat center;
+  background-size: cover;
+}
+.icon-train {
+  width: 50px;
+  height: 50px;
+  background: url("../icon/hcp.png") no-repeat center;
+  background-size: cover;
+}
+.icon-shop {
+  width: 50px;
+  height: 50px;
+  background: url("../icon/sc.png") no-repeat center;
+  background-size: cover;
+}
+.icon-touzi {
+  width: 40px;
+  height: 40px;
+  background: url("../icon/touzi.png") no-repeat center;
+  background-size: cover;
+}
+.icon-zengliang {
+  width: 40px;
+  height: 40px;
+  background: url("../icon/zengliang.png") no-repeat center;
+  background-size: cover;
+}
+.icon-jiangli {
+  width: 40px;
+  height: 40px;
+  background: url("../icon/jiangjin.png") no-repeat center;
+  background-size: cover;
+}
+.icon-shezhi {
+  width: 40px;
+  height: 38px;
+  background: url("../icon/shezhi.png") no-repeat center;
+  background-size: cover;
+}
+.icon-jinpai {
+  width: 38px;
+  height: 49px;
+  background: url("../icon/jinpai.png") no-repeat center;
+  background-size: cover;
+}
+.icon-yinpai {
+  width: 38px;
+  height: 49px;
+  background: url("../icon/yinpai.png") no-repeat center;
+  background-size: cover;
+}
+.icon-tongpai {
+  width: 38px;
+  height: 49px;
+  background: url("../icon/tongpai.png") no-repeat center;
+  background-size: cover;
+}
+.icon-r-1 {
+  width: 50x;
+  height: 50px;
+  background: url("../icon/1@2x.png") no-repeat center;
+  background-size: cover;
+}
+.icon-r-2 {
+  width: 50x;
+  height: 50px;
+  background: url("../icon/2@2x.png") no-repeat center;
+  background-size: cover;
+}
+.icon-r-3 {
+  width: 50x;
+  height: 50px;
+  background: url("../icon/3@2x.png") no-repeat center;
+  background-size: cover;
+}
+.icon-r-4 {
+  width: 50x;
+  height: 50px;
+  background: url("../icon/4@2x.png") no-repeat center;
+  background-size: cover;
+}
+.icon-checked {
+  width: 50px;
+  height: 50px;
+  background: url("../icon/checked.png") no-repeat center;
+  border-radius: 50%;
+  border: 2px solid #3f85f4;
+  background-size: 30px;
+}
+.icon-unchecked {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #3f85f4;
+  background-size: 30px;
+}
+.icon-close {
+  width: 40px;
+  height: 40px;
+  background: url("../icon/close.png") no-repeat center;
+  background-size: cover;
+}
+.icon-suo {
+  width: 35px;
+  height: 40px;
+  background: url("../icon/suo.png") no-repeat center;
+  background-size: cover;
+}
+.icon-fangxiang {
+  width: 47px;
+  height: 47px;
+  background: url("../icon/fangxiang.png") no-repeat center;
+  background-size: cover;
+}
+.icon-xianjinbao {
+  width: 50px;
+  height: 50px;
+  background: url("../icon/xianjinbao.png") no-repeat center;
+  background-size: cover;
+}
+.icon-touzibao {
+  width: 50px;
+  height: 50px;
+  background: url("../icon/touzibao.png") no-repeat center;
+  background-size: cover;
+}
+.icon-error {
+  width: 38px;
+  height: 38px;
+  background: url("../icon/error.png") no-repeat center;
+  background-size: cover;
+}
+.icon-error-w {
+  width: 70px;
+  height: 70px;
+  background: url("../icon/error-w.png") no-repeat center;
+  background-size: cover;
+}
+.icon-warn {
+  width: 62px;
+  height: 60px;
+  background: url("../icon/error.png") no-repeat center;
+  background-size: cover;
+}
+.icon-up {
+  width: 22px;
+  height: 26px;
+  background: url("../icon/up@2x.png") no-repeat center;
+  background-size: cover;
+}
+.icon-del {
+  width: 48px;
+  height: 35px;
+  background: url("../icon/backspace@2.png") no-repeat center;
+  background-size: cover;
+}
+.icon-invest {
+  width: 38px;
+  height: 41px;
+  background: url("../icon/invest.png") no-repeat center;
+  background-size: cover;
+}
+.icon-income {
+  width: 36px;
+  height: 40px;
+  background: url("../icon/income.png") no-repeat center;
+  background-size: cover;
+}
+.icon-transfer {
+  width: 40px;
+  height: 40px;
+  background: url("../icon/transfer.png") no-repeat center;
+  background-size: cover;
+}
+.icon-rili {
+  width: 40px;
+  height: 40px;
+  background-image: url("../icon/rili.png");
+  background-size: cover;
+}
+.icon-rili-active {
+  width: 40px;
+  height: 40px;
+  background: url("../icon/rili_active.png") no-repeat center;
+  background-size: cover;
+}
+.icon-shuaxin {
+  width: 30px;
+  height: 29px;
+  background: url("../icon/shuaxin.png") no-repeat center;
+  background-size: cover;
+}
+.icon-tip {
+  width: 40px;
+  height: 40px;
+  background: url("../icon/tip.png") no-repeat center;
+  background-size: contain;
+}
+.button-long {
+  display: block;
+  width: 702px;
+  height: 90px;
+  line-height: 90px;
+  text-align: center;
+  background-color: #3f85f4;
+  border-radius: 6px;
+  font-size: 40px;
+  font-weight: normal;
+  font-stretch: normal;
+  letter-spacing: 0px;
+  color: #ffffff;
+  margin: auto;
+  margin-top: 20px;
+}
+.button-small {
+  display: block;
+  width: 298px;
+  height: 90px;
+  line-height: 90px;
+  text-align: center;
+  background-color: #3f85f4;
+  border-radius: 6px;
+  font-size: 40px;
+  font-weight: normal;
+  font-stretch: normal;
+  letter-spacing: 0px;
+  color: #ffffff;
+  margin: auto;
+  margin-top: 20px;
+}
+.b-disabled {
+  background-color: rgba(63, 133, 244, 0.3);
+}
+.title-bg {
+  background: url("../img/touzibao@2x.png") no-repeat left bottom,
+    linear-gradient(
+      -28deg,
+      hsla(217, 80%, 60%, 1) 0%,
+      #1f99f9 50%,
+      hsla(199, 100%, 65%, 1) 100%
+    );
+  background-size: contain !important;
+}
