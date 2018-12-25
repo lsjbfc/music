@@ -17,10 +17,3 @@ npm run build --report
 
 npm run lint
 代码检测
-
-增量查看不做 #http://0.0.0.0:8090/#/reference/merchantdetails/record?ProjectId=4 加载更多出错
-http://0.0.0.0:8090/#/reference/record 选择分类不合理
-
-http://0.0.0.0:8090/#/invest/details 修改
-
-http://0.0.0.0:8090/#/consume 消费红包条数过多
