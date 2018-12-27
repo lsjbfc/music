@@ -4,6 +4,7 @@ const utils = require("./utils");
 const config = require("../config");
 const vueLoaderConfig = require("./vue-loader.conf");
 const VueLoaderPlugin = require("vue-loader/lib/plugin");
+const Happypack = require("happypack");
 // require("./bug.js");
 function resolve(dir) {
   return path.join(__dirname, "..", dir);
@@ -35,7 +36,7 @@ const webpackConfig = {
   context: path.resolve(__dirname, "../"),
   entry: {
     // browserTip: "./src/common/browser-tip.js",
-    app: "./src/main.js"
+    app: "./src/main.ts"
   },
   output: {
     path: config.build.assetsRoot,
@@ -52,6 +53,13 @@ const webpackConfig = {
   module: {
     rules: [
       // ...(config.dev.useEslint ? [createLintingRule()] : []),
+      {
+        test: /\.ts$/,
+        loader: "ts-loader",
+        options: {
+          appendTsSuffixTo: [/\.vue$/]
+        }
+      },
       {
         test: /\.vue$/,
         loader: "vue-loader",
@@ -94,21 +102,25 @@ const webpackConfig = {
   },
   plugins: [
     new VueLoaderPlugin(),
-    new require("happypack")({
+    new Happypack({
       id: "babel",
       loaders: ["babel-loader"]
     }),
-    new require("happypack")({
+    new Happypack({
       id: "image",
       loaders: ["url-loader"]
     }),
-    new require("happypack")({
+    new Happypack({
       id: "video",
       loaders: ["url-loader"]
     }),
-    new require("happypack")({
+    new Happypack({
       id: "font",
       loaders: ["url-loader"]
+    }),
+    new Happypack({
+      id: "ts",
+      loaders: ["ts-loader"]
     })
     // new webpack.DllReferencePlugin({
     //   context: __dirname,

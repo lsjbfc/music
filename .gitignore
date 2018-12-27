@@ -1,0 +1,6 @@
+/node_modules/
+/dist
+dist.zip
+dist.rar
+yarn-error.log
+npm-error.log
