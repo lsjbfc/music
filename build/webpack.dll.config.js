@@ -6,12 +6,21 @@ const config = require("../config");
 function resolve(dir) {
   return path.join(__dirname, "..", dir);
 }
-
+// path.resolve(__dirname, "../src/lib/vendors.js")
 module.exports = {
   mode: "production",
   context: path.resolve(__dirname, "../"),
   entry: {
-    vendors: [path.resolve(__dirname, "../src/lib/vendors.js")]
+    vendors_1: [
+      "babel-polyfill",
+      "vue/dist/vue.esm.js",
+      "vuex",
+      "vue-router",
+      "axios",
+      "fastclick",
+      "clipboard",
+      "better-scroll"
+    ]
   },
   output: {
     path: path.join(__dirname, "../dll"), // 动态链接库输出的文件名称
@@ -34,7 +43,7 @@ module.exports = {
           name: "async-vendors"
         }
       }
-    },
+    }
   },
   // manifest是描述文件
   plugins: [

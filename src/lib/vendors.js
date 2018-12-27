@@ -1,5 +1,5 @@
 import "babel-polyfill";
-import "vue";
+import "vue/dist/vue.esm.js";
 import "vuex";
 import "vue-router";
 import "axios";
