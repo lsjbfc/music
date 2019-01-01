@@ -44,7 +44,7 @@ const webpackConfig = {
     publicPath: publicPath()
   },
   resolve: {
-    extensions: [".js", ".vue", ".json", "less"],
+    extensions: [".js", ".vue", ".json", "less", ".ts"],
     alias: {
       vue$: "vue/dist/vue.esm.js",
       "@": resolve("src")

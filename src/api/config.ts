@@ -1,4 +1,4 @@
 export default {
   baseURL: "/Services",
-  timeout: ""
+  timeout: 600
 };

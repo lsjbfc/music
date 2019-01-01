@@ -8,20 +8,17 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { State, Action, Getter } from "vuex-class";
+
 @Component
 export default class App extends Vue {
   name: string = "Simon Zhang";
   @State login: boolean;
-  @Action initAjax: () => void;
   @Getter load: boolean;
 
   get isLogin(): boolean {
     return this.login;
   }
-
-  mounted() {
-    this.initAjax();
-  }
+  mounted() {}
 }
 </script>
 <style>

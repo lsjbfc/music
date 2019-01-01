@@ -1,26 +1,20 @@
 <template>
-  <!-- 首页 -->
-  <div class="page index-page"></div>
-</template>Í
-<script>
-import "./index.less";
-import categoryTitle from "@/components/category-title/category-title.vue";
-import {
-  GetTopAdList,
-  GetNoticeList,
-  GetTopProjectList
-} from "../../api/index.js";
-export default {
-  data() {
-    return {};
-  },
-  components: {
-    categoryTitle
-  },
-  created() {},
-  methods: {}
-};
+  <div class="page"></div>
+</template>
+<script lang="ts">
+import Vue from "vue";
+import Component from "vue-class-component";
+import { State, Action, Getter } from "vuex-class";
+
+@Component
+export default class App extends Vue {
+  name: string = "Simon Zhang";
+  @State login: boolean;
+  @Getter load: boolean;
+
+  get isLogin(): boolean {
+    return this.login;
+  }
+  mounted() {}
+}
 </script>
-<style lang="less">
-@import url("./index.less");
-</style>
