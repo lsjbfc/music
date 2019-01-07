@@ -1,24 +1,23 @@
 <template>
   <div id="app">
     {{name}}
+    {{nickname}}
     <router-view/>
   </div>
 </template>
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { State, Action, Getter } from "vuex-class";
 
 @Component
 export default class App extends Vue {
-  name: string = "Simon Zhang";
-  @State login: boolean;
-  @Getter load: boolean;
+  name: string = "lsjbfc";
+  nickname: string = "不会坏的草帽";
+  alogin: boolean = false;
 
-  get isLogin(): boolean {
-    return this.login;
+  mounted() {
+    console.log(this.alogin);
   }
-  mounted() {}
 }
 </script>
 <style>
