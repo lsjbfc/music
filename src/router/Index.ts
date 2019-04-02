@@ -4,7 +4,7 @@ import Router from "vue-router";
  * 首页
  */
 const Index = () =>
-  import(/* webpackChunkName: "index" */ "@/view/index/index.vue");
+  import(/* webpackChunkName: "index" */ "../view/index/index.vue");
 
 Vue.use(Router);
 
