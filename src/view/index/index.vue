@@ -56,4 +56,56 @@ export default class Index extends Vue {
     console.log(this.A);
   }
 }
+
+function a() {
+  this.name = "1";
+  this.sayname = function() {
+    return this.name;
+  };
+}
+a.prototype.id = "id1";
+a.prototype.sayid = function() {
+  return this.id;
+};
+var a1 = new a();
+(function() {
+  /**
+   * 原型链
+   */
+  function b() {}
+  b.prototype = new a();
+  b.prototype.name = "111";
+  var b1 = new b();
+  a1.sayid();
+  a1.id = "idb1";
+  a.prototype.id = "b1";
+  b1.sayid();
+  console.log(a1.sayid(), b1.sayid());
+  // 父
+})();
+(function() {
+  // 构造继承
+  function b() {
+    a.call(this);
+  }
+  b.prototype.name = "bname";
+  var b1 = new b();
+  console.log("b1id", b1.sayname());
+  // 只能访问构造函数示例方法，不能访问原型方法
+})();
+(function() {
+  /**
+   * 组合继承
+   */
+  function b() {
+    a.call(this);
+  }
+  b.prototype = new a();
+  b.prototype.name = "bname";
+  b.prototype.constructor = b;
+})();
+(function() {
+  // 拷贝继承
+})();
+(function() {})();
 </script>
